@@ -3,6 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#b9dcff" />
     <title>Happy Birthday!</title>
     <link
       href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap"
@@ -10,29 +11,15 @@
     />
     <style>
       :root {
-        --bg: #ffe9e1;
-        --ink: #4a1f2e;
-        --rose: #e0245e;
-        --paper: #fffaf6;
-        --soft: #ffc9d6;
-        color-scheme: light dark;
+        --bg: #b9dcff;
+        --ink: #14284b;
+        --rose: #2f6fe4;
+        --paper: #f7fbff;
+        --soft: #d6e9ff;
+        color-scheme: light;
         box-sizing: border-box;
         padding-top: env(safe-area-inset-top, 0px);
         padding-bottom: env(safe-area-inset-bottom, 0px);
-      }
-      @media (prefers-color-scheme: dark) {
-        :root:not([data-theme="light"]) {
-          --bg: #2a1220;
-          --ink: #ffe3ea;
-          --paper: #3b1a2c;
-          --soft: #6b2a45;
-        }
-      }
-      :root[data-theme="dark"] {
-        --bg: #2a1220;
-        --ink: #ffe3ea;
-        --paper: #3b1a2c;
-        --soft: #6b2a45;
       }
       html {
         scroll-padding-top: env(safe-area-inset-top, 0px);
@@ -138,7 +125,7 @@
       #cover {
         position: fixed;
         inset: 0;
-        background: var(--rose);
+        background: #2f6fe4;
         clip-path: circle(0 at 50% 50%);
         z-index: 5;
         pointer-events: none;
@@ -286,7 +273,7 @@
         flex-direction: column;
         align-items: center;
         text-align: center;
-        box-shadow: 0 18px 40px rgba(74, 31, 46, 0.28);
+        box-shadow: 0 18px 40px rgba(20, 40, 75, 0.28);
       }
       .front {
         position: absolute;
@@ -306,7 +293,7 @@
         align-items: center;
         justify-content: center;
         gap: 0.4em;
-        box-shadow: 0 18px 40px rgba(74, 31, 46, 0.28);
+        box-shadow: 0 18px 40px rgba(20, 40, 75, 0.28);
       }
       .front .f {
         background: var(--rose);
@@ -449,8 +436,8 @@
       <svg id="heart" viewBox="0 0 76 70">
         <path
           d="M38 68C10 46 2 32 2 20 2 9 10 2 20 2c8 0 14 4 18 11C42 6 48 2 56 2c10 0 18 7 18 18 0 12-8 26-36 48z"
-          fill="#e0245e"
-          stroke="#7a0d33"
+          fill="#2f6fe4"
+          stroke="#123a8a"
           stroke-width="3"
           stroke-linejoin="round"
         />
@@ -477,18 +464,18 @@
             id="string"
             d="M8 30Q60 30 112 30"
             fill="none"
-            stroke="#4a1f2e"
+            stroke="#14284b"
             stroke-width="1.6"
           />
         </svg>
         <svg class="arr" id="nock" viewBox="0 0 14 90">
           <path d="M7 0l7 14H9v60H5V14H0z" fill="#7a3b1e" />
-          <path d="M5 72h4v5l5 7v6l-7-5-7 5v-6l5-7z" fill="#e0245e" />
+          <path d="M5 72h4v5l5 7v6l-7-5-7 5v-6l5-7z" fill="#2f6fe4" />
         </svg>
       </div>
       <svg class="arr" id="fly" viewBox="0 0 14 90">
         <path d="M7 0l7 14H9v60H5V14H0z" fill="#7a3b1e" />
-        <path d="M5 72h4v5l5 7v6l-7-5-7 5v-6l5-7z" fill="#e0245e" />
+        <path d="M5 72h4v5l5 7v6l-7-5-7 5v-6l5-7z" fill="#2f6fe4" />
       </svg>
       <div id="miss">Missed! Try again</div>
     </div>
@@ -503,12 +490,12 @@
     <div id="cakeScr" class="screen center">
       <h2>Make a wish, then blow out the candle</h2>
       <svg viewBox="0 0 240 220" width="min(80vw,340px)" aria-label="Birthday cake">
-        <ellipse cx="120" cy="196" rx="112" ry="16" fill="#c9a4ae" />
-        <rect x="30" y="140" width="180" height="56" rx="10" fill="#ff8fab" />
-        <rect x="52" y="96" width="136" height="48" rx="10" fill="#ffb3c6" />
+        <ellipse cx="120" cy="196" rx="112" ry="16" fill="#9db4d4" />
+        <rect x="30" y="140" width="180" height="56" rx="10" fill="#6fa8ff" />
+        <rect x="52" y="96" width="136" height="48" rx="10" fill="#9cc7ff" />
         <path d="M52 108q12 16 24 0t24 0 24 0 24 0 24 0 16 0v-12H52z" fill="#fff" />
         <path d="M30 152q15 18 30 0t30 0 30 0 30 0 30 0 30 0v-12H30z" fill="#fff" />
-        <rect x="114" y="52" width="12" height="46" rx="3" fill="#8ecae6" />
+        <rect x="114" y="52" width="12" height="46" rx="3" fill="#ffe08a" />
         <path d="M114 68l12 8M114 80l12 8" stroke="#fff" stroke-width="3" />
         <g id="flame">
           <path d="M120 22c10 12 12 20 0 30-12-10-10-18 0-30z" fill="#ffb703" />
@@ -903,7 +890,7 @@
         }
         $("front").onclick = doOpen;
         function confetti() {
-          var cols = ["#e0245e", "#ffb703", "#8ecae6", "#ff8fab", "#95d5b2"];
+          var cols = ["#2f6fe4", "#ffb703", "#ffe08a", "#6fa8ff", "#95d5b2"];
           for (var i = 0; i < 60; i++) {
             var c = document.createElement("div");
             c.className = "confetti";
