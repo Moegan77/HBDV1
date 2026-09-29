@@ -1,0 +1,975 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Happy Birthday!</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #ffe9e1;
+        --ink: #4a1f2e;
+        --rose: #e0245e;
+        --paper: #fffaf6;
+        --soft: #ffc9d6;
+        color-scheme: light dark;
+        box-sizing: border-box;
+        padding-top: env(safe-area-inset-top, 0px);
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+      }
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) {
+          --bg: #2a1220;
+          --ink: #ffe3ea;
+          --paper: #3b1a2c;
+          --soft: #6b2a45;
+        }
+      }
+      :root[data-theme="dark"] {
+        --bg: #2a1220;
+        --ink: #ffe3ea;
+        --paper: #3b1a2c;
+        --soft: #6b2a45;
+      }
+      html {
+        scroll-padding-top: env(safe-area-inset-top, 0px);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+      }
+      body {
+        background: var(--bg);
+        color: var(--ink);
+        font-family: "Fredoka", system-ui, sans-serif;
+        overflow: hidden;
+        touch-action: manipulation;
+      }
+      /* ===== GENERAL / SCREENS ===== */
+      .screen {
+        position: fixed;
+        inset: 0;
+        display: none;
+      }
+      .screen.on {
+        display: flex;
+      }
+      /* ===== GAME 1: BOW AND HEART ===== */
+      #stage {
+        cursor: crosshair;
+        user-select: none;
+        -webkit-user-select: none;
+        touch-action: none;
+      }
+      #stage.on {
+        display: block;
+      }
+      #hint {
+        position: absolute;
+        top: calc(env(safe-area-inset-top, 0px) + 18px);
+        left: 0;
+        right: 0;
+        text-align: center;
+        font-size: 1.05rem;
+        font-weight: 600;
+      }
+      #hint small {
+        display: block;
+        font-weight: 400;
+        opacity: 0.7;
+        margin-top: 4px;
+      }
+      #heart {
+        position: absolute;
+        width: 76px;
+        height: 70px;
+        left: 0;
+        top: 24%;
+        margin: -35px 0 0 -38px;
+      }
+      #rig {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 120px;
+        height: 0;
+        transform-origin: 60px 0;
+      }
+      #rig svg.bw {
+        position: absolute;
+        left: 0;
+        top: -30px;
+        width: 120px;
+        height: 60px;
+      }
+      .arr {
+        position: absolute;
+        width: 14px;
+        height: 90px;
+      }
+      #nock {
+        left: 53px;
+        top: -90px;
+      }
+      #fly {
+        left: 0;
+        top: 0;
+        transform-origin: 7px 90px;
+        display: none;
+      }
+      #miss {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 56%;
+        text-align: center;
+        font-weight: 600;
+        opacity: 0;
+        transition: opacity 0.2s;
+      }
+      /* ===== TRANSITION COVER ===== */
+      #cover {
+        position: fixed;
+        inset: 0;
+        background: var(--rose);
+        clip-path: circle(0 at 50% 50%);
+        z-index: 5;
+        pointer-events: none;
+      }
+      /* ===== GAME 2: MATCHING PAIRS ===== */
+      .center {
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        padding: 12px;
+        text-align: center;
+      }
+      h2 {
+        margin: 0;
+        font-size: clamp(1.4rem, 5vw, 2rem);
+        color: var(--rose);
+      }
+      #grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 8px;
+        width: min(88vw, 56vh, 400px);
+      }
+      .tile {
+        aspect-ratio: 1;
+        border: 0;
+        border-radius: 8px;
+        background: var(--rose);
+        color: #fff;
+        font: inherit;
+        font-size: clamp(1.6rem, 8vw, 2.6rem);
+        padding: 0;
+        cursor: pointer;
+        transition:
+          transform 0.25s,
+          background 0.25s;
+      }
+      .tile.up {
+        background: var(--paper);
+        color: var(--ink);
+        transform: rotateY(180deg) scaleX(-1);
+        outline: 2px solid var(--rose);
+      }
+      .tile.done {
+        background: var(--soft);
+        outline: none;
+        opacity: 0.55;
+        cursor: default;
+      }
+      .tile.free {
+        background: transparent;
+        opacity: 1;
+      }
+      .tile:focus-visible,
+      button:focus-visible {
+        outline: 3px solid var(--ink);
+        outline-offset: 2px;
+      }
+      .link {
+        background: none;
+        border: 0;
+        font: inherit;
+        color: var(--ink);
+        opacity: 0.7;
+        text-decoration: underline;
+        cursor: pointer;
+      }
+      .btn {
+        font: inherit;
+        font-size: 1rem;
+        padding: 10px 18px;
+        border-radius: 999px;
+        border: 2px solid var(--rose);
+        background: var(--paper);
+        color: var(--ink);
+        cursor: pointer;
+      }
+      /* ===== GAME 3: CAKE AND CANDLE ===== */
+      #flame {
+        transform-origin: 50% 100%;
+        animation: flick 0.25s infinite alternate;
+      }
+      @keyframes flick {
+        to {
+          transform: scale(0.92, 1.08) rotate(3deg);
+        }
+      }
+      #flame.out {
+        animation: none;
+        opacity: 0;
+        transition: opacity 0.2s;
+      }
+      #smoke {
+        opacity: 0;
+      }
+      #smoke.go {
+        animation: smoke 1.6s ease-out;
+      }
+      @keyframes smoke {
+        0% {
+          opacity: 0.7;
+          transform: translateY(0);
+        }
+        100% {
+          opacity: 0;
+          transform: translateY(-40px);
+        }
+      }
+      /* ===== BIRTHDAY CARD ===== */
+      #cardWrap {
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.6s;
+        overflow: hidden;
+      }
+      #cardWrap.show {
+        opacity: 1;
+        visibility: visible;
+      }
+      #tilt {
+        --cw: min(60vw, 340px);
+        width: var(--cw);
+        aspect-ratio: 3/4;
+        font-size: calc(var(--cw) / 17);
+        transform-origin: 0 50%;
+        will-change: transform;
+      }
+      #card {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        perspective: 1800px;
+      }
+      #inner {
+        position: absolute;
+        inset: 0;
+        background: var(--paper);
+        border: 2px solid var(--soft);
+        border-radius: 2px 10px 10px 2px;
+        padding: 8%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        box-shadow: 0 18px 40px rgba(74, 31, 46, 0.28);
+      }
+      .front {
+        position: absolute;
+        inset: 0;
+        transform-origin: left center;
+        transform-style: preserve-3d;
+        will-change: transform;
+        z-index: 3;
+        cursor: pointer;
+      }
+      .front > div {
+        position: absolute;
+        inset: 0;
+        border-radius: 2px 10px 10px 2px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4em;
+        box-shadow: 0 18px 40px rgba(74, 31, 46, 0.28);
+      }
+      .front .f {
+        background: var(--rose);
+        color: #fff;
+        font-size: 1.7em;
+        font-weight: 700;
+        text-align: center;
+      }
+      .front .f span {
+        font-size: 2.4em;
+      }
+      .front .f small {
+        animation: pulse 1.6s ease-in-out infinite;
+      }
+      @keyframes pulse {
+        50% {
+          opacity: 0.35;
+        }
+      }
+      .front .b {
+        background: linear-gradient(90deg, var(--paper), var(--soft));
+        transform: rotateY(180deg);
+      }
+      .open .front {
+        cursor: default;
+      }
+      .front .b {
+        visibility: hidden;
+      }
+      h1 {
+        margin: 0;
+        font-size: 1.6em;
+        color: var(--rose);
+        line-height: 1.1;
+      }
+      #name {
+        font-size: 1.1em;
+        font-weight: 600;
+        margin: 0.4em 0 0.6em;
+      }
+      #msg {
+        font-size: 1em;
+        line-height: 1.45;
+        text-align: left;
+        white-space: pre-wrap;
+        flex: 1;
+        overflow: auto;
+        width: 100%;
+      }
+      [contenteditable]:focus {
+        outline: 2px dashed var(--rose);
+        outline-offset: 4px;
+        border-radius: 6px;
+      }
+      .slot {
+        flex: none;
+        width: calc(var(--cw) * 0.26);
+        aspect-ratio: 1;
+        border: 2px dashed var(--rose);
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: default;
+        overflow: hidden;
+        background: var(--soft);
+        padding: 0;
+        font: inherit;
+        color: var(--ink);
+        opacity: 0;
+        transition: opacity 0.6s 1s;
+      }
+      .b .slot {
+        width: 66%;
+      }
+      .open .slot {
+        opacity: 1;
+      }
+      .slot img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+      }
+      .slot span {
+        font-size: 0.65em;
+        padding: 4px;
+      }
+      .slot.filled {
+        border-style: solid;
+        background: transparent;
+      }
+      /* ===== BUTTONS AND CONFETTI ===== */
+      #tools {
+        position: fixed;
+        bottom: calc(env(safe-area-inset-bottom, 0px) + 10px);
+        left: 0;
+        right: 0;
+        display: none;
+        justify-content: center;
+        gap: 8px;
+        z-index: 6;
+      }
+      #tools.show {
+        display: flex;
+      }
+      #tools button {
+        font-size: 0.85rem;
+        padding: 8px 14px;
+      }
+      .confetti {
+        position: fixed;
+        top: -12px;
+        width: 10px;
+        height: 14px;
+        z-index: 7;
+        pointer-events: none;
+        animation: fall linear forwards;
+      }
+      @keyframes fall {
+        to {
+          transform: translateY(110vh) rotate(720deg);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .confetti {
+          display: none;
+        }
+        #flame {
+          animation: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- GAME 1: shoot the heart -->
+    <div id="stage" class="screen on">
+      <div id="hint">
+        Hit the heart<small>Move to aim, press and hold to pull the bow, release to fire</small>
+      </div>
+      <svg id="heart" viewBox="0 0 76 70">
+        <path
+          d="M38 68C10 46 2 32 2 20 2 9 10 2 20 2c8 0 14 4 18 11C42 6 48 2 56 2c10 0 18 7 18 18 0 12-8 26-36 48z"
+          fill="#e0245e"
+          stroke="#7a0d33"
+          stroke-width="3"
+          stroke-linejoin="round"
+        />
+        <ellipse
+          cx="22"
+          cy="20"
+          rx="7"
+          ry="5"
+          fill="#fff"
+          opacity=".45"
+          transform="rotate(-30 22 20)"
+        />
+      </svg>
+      <div id="rig">
+        <svg class="bw" viewBox="0 0 120 60">
+          <path
+            d="M8 30Q60-26 112 30"
+            fill="none"
+            stroke="#7a3b1e"
+            stroke-width="6"
+            stroke-linecap="round"
+          />
+          <path
+            id="string"
+            d="M8 30Q60 30 112 30"
+            fill="none"
+            stroke="#4a1f2e"
+            stroke-width="1.6"
+          />
+        </svg>
+        <svg class="arr" id="nock" viewBox="0 0 14 90">
+          <path d="M7 0l7 14H9v60H5V14H0z" fill="#7a3b1e" />
+          <path d="M5 72h4v5l5 7v6l-7-5-7 5v-6l5-7z" fill="#e0245e" />
+        </svg>
+      </div>
+      <svg class="arr" id="fly" viewBox="0 0 14 90">
+        <path d="M7 0l7 14H9v60H5V14H0z" fill="#7a3b1e" />
+        <path d="M5 72h4v5l5 7v6l-7-5-7 5v-6l5-7z" fill="#e0245e" />
+      </svg>
+      <div id="miss">Missed! Try again</div>
+    </div>
+    <div id="cover"></div>
+    <!-- GAME 2: matching pairs -->
+    <div id="match" class="screen center">
+      <h2>Match the pairs</h2>
+      <div id="grid"></div>
+      <div><span id="cnt">0 / 10 pairs</span></div>
+    </div>
+    <!-- GAME 3: blow out the candle -->
+    <div id="cakeScr" class="screen center">
+      <h2>Make a wish, then blow out the candle</h2>
+      <svg viewBox="0 0 240 220" width="min(80vw,340px)" aria-label="Birthday cake">
+        <ellipse cx="120" cy="196" rx="112" ry="16" fill="#c9a4ae" />
+        <rect x="30" y="140" width="180" height="56" rx="10" fill="#ff8fab" />
+        <rect x="52" y="96" width="136" height="48" rx="10" fill="#ffb3c6" />
+        <path d="M52 108q12 16 24 0t24 0 24 0 24 0 24 0 16 0v-12H52z" fill="#fff" />
+        <path d="M30 152q15 18 30 0t30 0 30 0 30 0 30 0 30 0v-12H30z" fill="#fff" />
+        <rect x="114" y="52" width="12" height="46" rx="3" fill="#8ecae6" />
+        <path d="M114 68l12 8M114 80l12 8" stroke="#fff" stroke-width="3" />
+        <g id="flame">
+          <path d="M120 22c10 12 12 20 0 30-12-10-10-18 0-30z" fill="#ffb703" />
+          <path d="M120 34c5 6 5 10 0 14-5-4-5-8 0-14z" fill="#fff3b0" />
+        </g>
+        <rect
+          id="hit"
+          x="96"
+          y="10"
+          width="48"
+          height="50"
+          fill="transparent"
+          style="cursor: pointer"
+        />
+        <path
+          id="smoke"
+          d="M120 40q-8-10 0-18t0-16"
+          fill="none"
+          stroke="#999"
+          stroke-width="3"
+          stroke-linecap="round"
+        />
+      </svg>
+      <button class="btn" id="mic" type="button">Blow into your mic</button>
+      <span id="note">or tap the flame</span>
+    </div>
+    <!-- BIRTHDAY CARD -->
+    <div id="cardWrap" class="screen">
+      <div id="tilt">
+        <div id="card">
+          <div class="front" id="front">
+            <div class="f">
+              <span>🎂</span>Happy Birthday!<small style="font-size: 0.5em; font-weight: 400"
+                >tap to open</small
+              >
+            </div>
+            <div class="b">
+              <div class="slot" id="s1" role="img" aria-label="Sticker"></div>
+            </div>
+          </div>
+          <div id="inner">
+            <h1>Happy Birthday!</h1>
+            <div id="name" contenteditable="true" spellcheck="false" aria-label="Name">
+              Dear You
+            </div>
+            <div id="msg" contenteditable="true" aria-label="Message">
+              Wishing you a day full of love, cake and silly little joys. Thank you for being you.
+              I'm so happy you were born!
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="tools">
+      <button class="btn" id="replay" type="button">Play again</button
+      >
+    </div>
+    <script>
+      (function () {
+        var $ = function (i) {
+          return document.getElementById(i);
+        };
+        /* GAME 1: bow, arrow and heart */
+        var stage = $("stage"),
+          heart = $("heart"),
+          rig = $("rig"),
+          nock = $("nock"),
+          fly = $("fly"),
+          string = $("string"),
+          cover = $("cover"),
+          wrap = $("cardWrap"),
+          miss = $("miss"),
+          hint = $("hint");
+        var W = innerWidth,
+          H = innerHeight,
+          state = "play",
+          t = 0,
+          last = 0,
+          hx = 0,
+          hy = 0,
+          ang = 0,
+          pulling = false,
+          pull = 0,
+          MAXP = 26,
+          flying = false,
+          px = 0,
+          py = 0,
+          fa = 0,
+          vx = 0,
+          vy = 0,
+          fallV = 0,
+          misses = 0,
+          AH = 90;
+        addEventListener("resize", function () {
+          W = innerWidth;
+          H = innerHeight;
+        });
+        function show(el) {
+          ["stage", "match", "cakeScr", "cardWrap"].forEach(function (i) {
+            $(i).classList.remove("on");
+          });
+          el.classList.add("on");
+        }
+        function place() {
+          rig.style.transform =
+            "translate(" + (W / 2 - 60) + "px," + (H - 46) + "px) rotate(" + ang + "rad)";
+          nock.style.transform = "translateY(" + pull + "px)";
+          string.setAttribute("d", "M8 30Q60 " + (30 + pull * 2) + " 112 30");
+        }
+        function aim(x, y) {
+          ang = Math.max(-1.25, Math.min(1.25, Math.atan2(x - W / 2, -(y - (H - 46)))));
+        }
+        stage.addEventListener("pointermove", function (e) {
+          if (state === "play") aim(e.clientX, e.clientY);
+        });
+        stage.addEventListener("pointerdown", function (e) {
+          if (state !== "play" || flying) return;
+          aim(e.clientX, e.clientY);
+          pulling = true;
+          miss.style.opacity = 0;
+        });
+        function release() {
+          if (!pulling) return;
+          pulling = false;
+          var p0 = pull,
+            p = p0 / MAXP;
+          pull = 0;
+          if (p < 0.15 || state !== "play") return;
+          var s = 650 + 1000 * p,
+            dx = Math.sin(ang),
+            dy = -Math.cos(ang);
+          fa = ang;
+          px = W / 2 - dx * p0;
+          py = H - 46 - dy * p0;
+          vx = dx * s;
+          vy = dy * s;
+          flying = true;
+          fly.style.display = "block";
+          nock.style.display = "none";
+        }
+        addEventListener("pointerup", release);
+        addEventListener("pointercancel", release);
+        addEventListener("keydown", function (e) {
+          if (e.code === "Space") {
+            e.preventDefault();
+            if (!e.repeat && state === "play" && !flying) {
+              pulling = true;
+              miss.style.opacity = 0;
+            }
+          }
+        });
+        addEventListener("keyup", function (e) {
+          if (e.code === "Space") release();
+        });
+        function frame(now) {
+          var dt = Math.min((now - last) / 1000, 0.05);
+          last = now;
+          if (state === "play") {
+            t += dt * (1 + Math.min(misses, 3) * 0.1);
+            var half = W / 2 - 60;
+            hx = W / 2 + Math.sin(t) * half;
+            hy = H * 0.24 + Math.sin(t * 1.5) * H * 0.025;
+            heart.style.transform = "translate(" + hx + "px," + (hy - H * 0.24) + "px)";
+            if (pulling) pull = Math.min(MAXP, pull + dt * 45);
+            if (flying) {
+              var dx = Math.sin(fa),
+                dy = -Math.cos(fa);
+              for (var i = 0; i < 4 && flying; i++) {
+                px += (vx * dt) / 4;
+                py += (vy * dt) / 4;
+                var tx = px + dx * AH,
+                  ty = py + dy * AH;
+                if (Math.hypot(tx - hx, ty - hy) < 40) {
+                  flying = false;
+                  hit();
+                } else if (ty < -30 || tx < -30 || tx > W + 30 || ty > H + 30) {
+                  flying = false;
+                  fly.style.display = "none";
+                  nock.style.display = "block";
+                  misses++;
+                  miss.style.opacity = 1;
+                }
+              }
+              fly.style.transform =
+                "translate(" + (px - 7) + "px," + (py - AH) + "px) rotate(" + fa + "rad)";
+            }
+            place();
+          } else if (state === "fall") {
+            fallV += 2600 * dt;
+            hy += fallV * dt;
+            var floor = H - 50;
+            if (hy >= floor) {
+              hy = floor;
+              state = "cover";
+              heart.style.transform = "translate(" + hx + "px," + (hy - H * 0.24) + "px)";
+              expand();
+            } else
+              heart.style.transform =
+                "translate(" + hx + "px," + (hy - H * 0.24) + "px) rotate(" + fallV * 0.05 + "deg)";
+          }
+          requestAnimationFrame(frame);
+        }
+        function hit() {
+          state = "fall";
+          fallV = 0;
+          hint.style.opacity = 0;
+          fly.style.display = "none";
+          nock.style.display = "none";
+        }
+        function expand() {
+          var a = "circle(0 at " + hx + "px " + hy + "px)";
+          cover.style.clipPath = a;
+          cover.animate(
+            [{ clipPath: a }, { clipPath: "circle(150% at " + hx + "px " + hy + "px)" }],
+            { duration: 650, easing: "ease-in", fill: "forwards" },
+          ).onfinish = function () {
+            cover.style.clipPath = "circle(150% at 50% 50%)";
+            show($("match"));
+            startMatch();
+            setTimeout(function () {
+              cover.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 600, fill: "forwards" });
+            }, 700);
+          };
+        }
+        /* matching game: 10 pairs */
+        var EM = ["🐻", "🐼", "🌸", "🍓", "🎈", "🎁", "🍰", "🧁", "🌈", "⭐"],
+          first = null,
+          lock = false,
+          pairs = 0,
+          TOTAL = 10;
+        function startMatch() {
+          var a = EM.concat(EM);
+          for (var i = a.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1)),
+              x = a[i];
+            a[i] = a[j];
+            a[j] = x;
+          }
+          var g = $("grid");
+          g.innerHTML = "";
+          pairs = 0;
+          first = null;
+          lock = false;
+          $("cnt").textContent = "0 / 10 pairs";
+          a.forEach(function (e) {
+            var b = document.createElement("button");
+            b.className = "tile";
+            b.type = "button";
+            b.setAttribute("aria-label", "Card");
+            b.textContent = "?";
+            b.onclick = function () {
+              flip(b, e);
+            };
+            g.appendChild(b);
+          });
+        }
+        function flip(b, e) {
+          if (lock || b.classList.contains("up") || b.classList.contains("done")) return;
+          b.classList.add("up");
+          b.textContent = e;
+          b.dataset.e = e;
+          if (!first) {
+            first = b;
+            return;
+          }
+          var f = first;
+          first = null;
+          if (f.dataset.e === e) {
+            f.classList.add("done");
+            b.classList.add("done");
+            pairs++;
+            $("cnt").textContent = pairs + " / " + TOTAL + " pairs";
+            if (pairs === TOTAL) setTimeout(toCake, 800);
+          } else {
+            lock = true;
+            setTimeout(function () {
+              [f, b].forEach(function (x) {
+                x.classList.remove("up");
+                x.textContent = "?";
+              });
+              lock = false;
+            }, 650);
+          }
+        }
+        /* cake + blow the candle */
+        var micOn = false,
+          lit = true,
+          stream = null;
+        function toCake() {
+          show($("cakeScr"));
+        }
+        function out() {
+          if (!lit) return;
+          lit = false;
+          $("flame").classList.add("out");
+          $("smoke").classList.add("go");
+          if (stream) {
+            stream.getTracks().forEach(function (t) {
+              t.stop();
+            });
+          }
+          setTimeout(openCard, 1300);
+        }
+        $("hit").onclick = out;
+        $("mic").onclick = function () {
+          if (micOn) return;
+          micOn = true;
+          $("note").textContent = "Listening... blow!";
+          navigator.mediaDevices
+            .getUserMedia({ audio: true })
+            .then(function (s) {
+              stream = s;
+              var c = new (window.AudioContext || window.webkitAudioContext)(),
+                an = c.createAnalyser();
+              an.fftSize = 512;
+              c.createMediaStreamSource(s).connect(an);
+              var buf = new Uint8Array(an.fftSize),
+                n = 0;
+              (function loop() {
+                if (!lit) return;
+                an.getByteTimeDomainData(buf);
+                var m = 0;
+                for (var i = 0; i < buf.length; i++) {
+                  var v = (buf[i] - 128) / 128;
+                  m += v * v;
+                }
+                m = Math.sqrt(m / buf.length);
+                n = m > 0.12 ? n + 1 : Math.max(0, n - 1);
+                if (n > 10) out();
+                else requestAnimationFrame(loop);
+              })();
+            })
+            .catch(function () {
+              micOn = false;
+              $("note").textContent = "Mic unavailable. Tap the flame instead.";
+            });
+        };
+        /* card */
+        function openCard() {
+          show(wrap);
+          void wrap.offsetWidth;
+          wrap.classList.add("show");
+        }
+        function doOpen() {
+          if (wrap.classList.contains("open")) return;
+          wrap.classList.add("open");
+          var tl = $("tilt"),
+            fr = $("front"),
+            f = fr.children[0],
+            bk = fr.children[1],
+            inn = $("inner"),
+            cw = tl.offsetWidth,
+            ch = tl.offsetHeight,
+            d = 22,
+            r = (d * Math.PI) / 180,
+            bw = 2 * cw * Math.cos(r) + ch * Math.sin(r),
+            bh = 2 * cw * Math.sin(r) + ch * Math.cos(r),
+            k = Math.min(1, (innerWidth * 0.94) / bw, (innerHeight * 0.8) / bh),
+            D = 2600,
+            t0 = null;
+          function ease(x) {
+            return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+          }
+          function step(ts) {
+            if (!t0) t0 = ts;
+            var p = Math.min(1, (ts - t0) / D),
+              e = ease(p),
+              c = ease(Math.max(0, Math.min(1, (p - 0.1) / 0.9))),
+              a = 180 * c;
+            tl.style.transform =
+              "translateX(" +
+              (cw / 2) * e +
+              "px) rotate(" +
+              d * e +
+              "deg) scale(" +
+              (1 + (k - 1) * e) +
+              ")";
+            fr.style.transform = "rotateY(" + -a + "deg)";
+            f.style.visibility = a < 90 ? "visible" : "hidden";
+            bk.style.visibility = a < 90 ? "hidden" : "visible";
+            inn.style.backgroundImage =
+              "linear-gradient(90deg,rgba(74,31,46," +
+              0.3 * Math.sin(Math.PI * c) +
+              "),transparent 55%)";
+            if (p < 1) requestAnimationFrame(step);
+            else {
+              $("tools").classList.add("show");
+              confetti();
+            }
+          }
+          requestAnimationFrame(step);
+        }
+        $("front").onclick = doOpen;
+        function confetti() {
+          var cols = ["#e0245e", "#ffb703", "#8ecae6", "#ff8fab", "#95d5b2"];
+          for (var i = 0; i < 60; i++) {
+            var c = document.createElement("div");
+            c.className = "confetti";
+            c.style.left = Math.random() * 100 + "vw";
+            c.style.background = cols[i % 5];
+            c.style.animationDuration = 2.5 + Math.random() * 2.5 + "s";
+            c.style.animationDelay = Math.random() * 1.2 + "s";
+            document.body.appendChild(c);
+            setTimeout(
+              function (e) {
+                e.remove();
+              },
+              7000,
+              c,
+            );
+          }
+        }
+        /* saved text + stickers */
+        var KEY = "bday-v2",
+          saved = {};
+        try {
+          saved = JSON.parse(localStorage.getItem(KEY) || "{}");
+        } catch (e) {}
+        function store() {
+          try {
+            localStorage.setItem(KEY, JSON.stringify(saved));
+          } catch (e) {}
+        }
+        if (saved.name) $("name").textContent = saved.name;
+        if (saved.msg) $("msg").textContent = saved.msg;
+        $("name").oninput = function () {
+          saved.name = this.textContent;
+          store();
+        };
+        $("msg").oninput = function () {
+          saved.msg = this.textContent;
+          store();
+        };
+        /* fixed sticker: put bubu-dudu.gif (or .png / .webp / .jpg) next to this file */
+        var stickerFiles = ["bubu-dudu.gif", "bubu-dudu.png", "bubu-dudu.webp", "bubu-dudu.jpg"],
+          stickerSlot = $("s1"),
+          stickerImg = document.createElement("img");
+        stickerImg.alt = "Bubu and Dudu";
+        stickerSlot.innerHTML = "";
+        stickerSlot.classList.add("filled");
+        stickerSlot.appendChild(stickerImg);
+        stickerSlot.setAttribute("aria-label", "Bubu and Dudu sticker");
+        (function tryNext(n) {
+          if (n >= stickerFiles.length) {
+            stickerSlot.style.display = "none";
+            return;
+          }
+          stickerImg.onerror = function () {
+            tryNext(n + 1);
+          };
+          stickerImg.src = stickerFiles[n];
+        })(0);
+        $("replay").onclick = function () {
+          location.reload();
+        };
+        place();
+        requestAnimationFrame(function (n) {
+          last = n;
+          frame(n);
+        });
+      })();
+    </script>
+  </body>
+</html>
