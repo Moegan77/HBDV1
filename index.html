@@ -53,6 +53,8 @@
         cursor: crosshair;
         user-select: none;
         -webkit-user-select: none;
+        -webkit-touch-callout: none;
+        -webkit-tap-highlight-color: transparent;
         touch-action: none;
       }
       #stage.on {
@@ -381,6 +383,29 @@
         font-size: 0.65em;
         padding: 4px;
       }
+      /* ===== PICTURE FRAME (left page) ===== */
+      .photo {
+        width: 78%;
+        aspect-ratio: 3/4;
+        background: #fff;
+        padding: 4%;
+        border-radius: 6px;
+        box-shadow: 0 8px 20px rgba(20, 40, 75, 0.3);
+        transform: rotate(-3deg);
+        opacity: 0;
+        transition: opacity 0.6s 1s;
+        overflow: hidden;
+      }
+      .open .photo {
+        opacity: 1;
+      }
+      .photo img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 3px;
+      }
       .slot.filled {
         border-style: solid;
         background: transparent;
@@ -533,17 +558,16 @@
               >
             </div>
             <div class="b">
-              <div class="slot" id="s1" role="img" aria-label="Sticker"></div>
+              <div class="photo" id="s1" role="img" aria-label="Picture"></div>
             </div>
           </div>
           <div id="inner">
-            <h1>Happy Birthday!</h1>
+            <h1>HBD loh Kata Taqia</h1>
             <div id="name" contenteditable="true" spellcheck="false" aria-label="Name">
-              Dear You
+              Wahai Ahsan
             </div>
             <div id="msg" contenteditable="true" aria-label="Message">
-              Wishing you a day full of love, cake and silly little joys. Thank you for being you.
-              I'm so happy you were born!
+              HBD Ahsan moga panjang umur trs bisa sama Taqia yey, kata Taqia I Love You
             </div>
           </div>
         </div>
@@ -613,9 +637,17 @@
         });
         stage.addEventListener("pointerdown", function (e) {
           if (state !== "play" || flying) return;
+          e.preventDefault();
+          try {
+            stage.setPointerCapture(e.pointerId);
+          } catch (err) {}
           aim(e.clientX, e.clientY);
           pulling = true;
           miss.style.opacity = 0;
+        });
+        /* stop the long-press menu on phones while holding the bow */
+        stage.addEventListener("contextmenu", function (e) {
+          e.preventDefault();
         });
         function release() {
           if (!pulling) return;
@@ -877,7 +909,7 @@
             f.style.visibility = a < 90 ? "visible" : "hidden";
             bk.style.visibility = a < 90 ? "hidden" : "visible";
             inn.style.backgroundImage =
-              "linear-gradient(90deg,rgba(74,31,46," +
+              "linear-gradient(90deg,rgba(20,40,75," +
               0.3 * Math.sin(Math.PI * c) +
               "),transparent 55%)";
             if (p < 1) requestAnimationFrame(step);
@@ -929,24 +961,31 @@
           saved.msg = this.textContent;
           store();
         };
-        /* fixed sticker: put bubu-dudu.gif (or .png / .webp / .jpg) next to this file */
-        var stickerFiles = ["bubu-dudu.gif", "bubu-dudu.png", "bubu-dudu.webp", "bubu-dudu.jpg"],
-          stickerSlot = $("s1"),
-          stickerImg = document.createElement("img");
-        stickerImg.alt = "Bubu and Dudu";
-        stickerSlot.innerHTML = "";
-        stickerSlot.classList.add("filled");
-        stickerSlot.appendChild(stickerImg);
-        stickerSlot.setAttribute("aria-label", "Bubu and Dudu sticker");
+        /* picture on the left page: put picture.jpg (or .jpeg / .png / .webp / .gif) next to this file */
+        var pictureFiles = [
+            "Ahsan.jpg",
+            "picture.jpeg",
+            "picture.png",
+            "picture.webp",
+            "picture.gif",
+            "bubu-dudu.gif",
+            "bubu-dudu.png",
+            "bubu-dudu.webp",
+            "bubu-dudu.jpg",
+          ],
+          pictureBox = $("s1"),
+          pictureImg = document.createElement("img");
+        pictureImg.alt = "Picture";
+        pictureBox.appendChild(pictureImg);
         (function tryNext(n) {
-          if (n >= stickerFiles.length) {
-            stickerSlot.style.display = "none";
+          if (n >= pictureFiles.length) {
+            pictureBox.style.display = "none";
             return;
           }
-          stickerImg.onerror = function () {
+          pictureImg.onerror = function () {
             tryNext(n + 1);
           };
-          stickerImg.src = stickerFiles[n];
+          pictureImg.src = pictureFiles[n];
         })(0);
         $("replay").onclick = function () {
           location.reload();
